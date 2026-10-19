@@ -1643,6 +1643,8 @@ function SubmittedReviewsPage({ reviews, categories, qrs, onUpdateStatus, onDele
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Filter reviews
   const filteredReviews = reviews.filter((review) => {
@@ -1659,9 +1661,87 @@ function SubmittedReviewsPage({ reviews, categories, qrs, onUpdateStatus, onDele
     return true;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredReviews.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedReviews = filteredReviews.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterQr, filterCategory, filterStatus, searchTerm]);
+
   const pendingCount = reviews.filter((r) => r.status === "pending").length;
   const approvedCount = reviews.filter((r) => r.status === "approved").length;
   const rejectedCount = reviews.filter((r) => r.status === "rejected").length;
+
+  // Pagination component
+  const Pagination = () => {
+    if (totalPages <= 1) return null;
+    
+    const getPageNumbers = () => {
+      const pages: (number | string)[] = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        if (currentPage <= 3) {
+          pages.push(1, 2, 3, 4, "...", totalPages);
+        } else if (currentPage >= totalPages - 2) {
+          pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        } else {
+          pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+        }
+      }
+      return pages;
+    };
+
+    return (
+      <div className="flex items-center justify-between border-t border-border px-4 py-3 sm:px-5">
+        <div className="text-[11px] text-muted-foreground">
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredReviews.length)} of {filteredReviews.length} reviews
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
+          {getPageNumbers().map((page, index) => (
+            typeof page === "number" ? (
+              <Button
+                key={index}
+                type="button"
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                className="h-8 w-8 p-0 text-[11px]"
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </Button>
+            ) : (
+              <span key={index} className="px-2 text-[11px] text-muted-foreground">...</span>
+            )
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            <ChevronRight className="size-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -1769,56 +1849,59 @@ function SubmittedReviewsPage({ reviews, categories, qrs, onUpdateStatus, onDele
             } 
           />
         ) : (
-          <div className="divide-y divide-border">
-            {filteredReviews.map((review) => {
-              const category = categories.find((c) => c.id === review.category_id);
-              const qr = qrs.find((q) => q.id === review.qr_code_id);
-              return (
-                <div key={review.id} className="px-4 py-4 sm:px-5">
-                  <div className="flex items-start gap-3">
-                    <div className={`grid size-10 shrink-0 place-items-center rounded-full ${review.is_custom ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"}`}>
-                      <Users className="size-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-[12px] font-semibold">{review.reviewer_name}</p>
-                        <span className="text-[10px] text-amber-500">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
-                        {review.is_custom && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[8px] font-medium text-primary">CUSTOM</span>}
+          <>
+            <div className="divide-y divide-border">
+              {paginatedReviews.map((review) => {
+                const category = categories.find((c) => c.id === review.category_id);
+                const qr = qrs.find((q) => q.id === review.qr_code_id);
+                return (
+                  <div key={review.id} className="px-4 py-4 sm:px-5">
+                    <div className="flex items-start gap-3">
+                      <div className={`grid size-10 shrink-0 place-items-center rounded-full ${review.is_custom ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"}`}>
+                        <Users className="size-4" />
                       </div>
-                      <p className="mt-1 text-[10px] text-muted-foreground">
-                        {review.reviewer_email && <span className="font-medium">{review.reviewer_email} · </span>}
-                        {category?.name || "No category"} · {qr?.name || "Unknown QR"} · {formatDate(review.created_at)} · {review.device_category}
-                      </p>
-                      <p className="mt-2 text-[11px] leading-5 text-foreground">{review.review_text}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <StatusPill status={review.status} />
-                      <div className="flex items-center gap-1">
-                        {review.status === "pending" && (
-                          <>
-                            <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] text-success" onClick={() => onUpdateStatus(review, "approved")}>
-                              <Check className="size-3" />Approve
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-[12px] font-semibold">{review.reviewer_name}</p>
+                          <span className="text-[10px] text-amber-500">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+                          {review.is_custom && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[8px] font-medium text-primary">CUSTOM</span>}
+                        </div>
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                          {review.reviewer_email && <span className="font-medium">{review.reviewer_email} · </span>}
+                          {category?.name || "No category"} · {qr?.name || "Unknown QR"} · {formatDate(review.created_at)} · {review.device_category}
+                        </p>
+                        <p className="mt-2 text-[11px] leading-5 text-foreground">{review.review_text}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <StatusPill status={review.status} />
+                        <div className="flex items-center gap-1">
+                          {review.status === "pending" && (
+                            <>
+                              <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] text-success" onClick={() => onUpdateStatus(review, "approved")}>
+                                <Check className="size-3" />Approve
+                              </Button>
+                              <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] text-destructive" onClick={() => onUpdateStatus(review, "rejected")}>
+                                <X className="size-3" />Reject
+                              </Button>
+                            </>
+                          )}
+                          {review.status !== "pending" && (
+                            <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => onUpdateStatus(review, "pending" as "approved")}>
+                              Reset
                             </Button>
-                            <Button type="button" variant="outline" size="sm" className="h-7 text-[10px] text-destructive" onClick={() => onUpdateStatus(review, "rejected")}>
-                              <X className="size-3" />Reject
-                            </Button>
-                          </>
-                        )}
-                        {review.status !== "pending" && (
-                          <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => onUpdateStatus(review, "pending" as "approved")}>
-                            Reset
+                          )}
+                          <Button type="button" variant="ghost" size="icon" onClick={() => onDelete(review)}>
+                            <Trash2 className="size-4 text-destructive" />
                           </Button>
-                        )}
-                        <Button type="button" variant="ghost" size="icon" onClick={() => onDelete(review)}>
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            <Pagination />
+          </>
         )}
       </section>
     </>
