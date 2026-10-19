@@ -1013,10 +1013,9 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
   openView: (view: ViewId) => void;
   onRefresh: () => void;
 }) {
-  // Determine welcome message - only show name if it's actually set (not empty)
-  const welcomeTitle = agency.name && agency.name.trim() 
-    ? `Welcome, ${agency.name.trim()}` 
-    : "Welcome to your workspace";
+  // Welcome message shows admin username
+  const adminUsername = import.meta.env.VITE_ADMIN_USERNAME || "Admin";
+  const welcomeTitle = `Welcome, ${adminUsername}`;
   
   return <>
     <PageIntro eyebrow="AGENCY OVERVIEW" title={welcomeTitle} description="A clear view of the review links, QR codes and customer scans you've collected." action={<Button variant="outline" className={buttonQuiet} onClick={onRefresh}><Activity className="size-4" />Refresh activity</Button>} />
