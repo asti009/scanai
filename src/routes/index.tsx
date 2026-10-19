@@ -1013,8 +1013,6 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
   openView: (view: ViewId) => void;
   onRefresh: () => void;
 }) {
-  const topQrs = [...qrs].sort((a, b) => countScans(scans, b.id) - countScans(scans, a.id)).slice(0, 4);
-  
   // Determine welcome message - only show name if it's actually set (not empty)
   const welcomeTitle = agency.name && agency.name.trim() 
     ? `Welcome, ${agency.name.trim()}` 
@@ -1039,16 +1037,6 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
           {platforms.map((platform) => <div key={platform.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5"><PlatformMark platform={platform.platform_type as PlatformType} /><div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{platform.display_name}</p><p className="mt-0.5 truncate text-[10px] text-muted-foreground">{platform.review_url ? truncateUrl(platform.review_url) : "Destination not set"}</p></div><StatusPill status={platform.enabled ? "verified" : platform.verification_status} /></div>)}
         </div>
         {platforms.length === 0 && <EmptyState icon={Globe2} title="No destinations configured" description="Add the exact profile or review links for your agency." />}
-      </section>
-    </div>
-    <div className="mt-5 grid gap-5 xl:grid-cols-[1.65fr_1fr]">
-      <section className="border border-border bg-card">
-        <PanelHeading title="Top performing QR codes" detail="Sorted by recorded scans" action={<Button variant="ghost" size="sm" className="h-7 text-[10px] text-primary" onClick={() => openView("qr")}>View all<ArrowRight className="size-3" /></Button>} />
-        {topQrs.length === 0 ? <EmptyState icon={QrCode} title="Your QR codes will appear here" description="Choose a verified destination to create your first code." action={<Button size="sm" onClick={() => openView("qr")}><Plus className="size-4" />New QR code</Button>} /> : <div className="divide-y divide-border">{topQrs.map((qr) => { const platform = platforms.find((item) => item.id === qr.platform_id); return <div key={qr.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5"><div className="grid size-8 shrink-0 place-items-center rounded-md bg-secondary text-primary"><QrCode className="size-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{qr.name}</p><p className="mt-0.5 text-[10px] text-muted-foreground">{platform?.display_name ?? "Unassigned"} · {qr.qr_type === "tracked" ? "Tracked" : "Direct"}</p></div><div className="text-right"><p className="text-[14px] font-semibold tabular-nums">{countScans(scans, qr.id)}</p><p className="text-[9px] text-muted-foreground">scans</p></div><StatusPill status={qr.status} /></div>; })}</div>}
-      </section>
-      <section className="border border-border bg-card">
-        <PanelHeading title="Campaign activity" detail={`${campaigns.length} total campaigns`} action={<Button variant="ghost" size="sm" className="h-7 text-[10px] text-primary" onClick={() => openView("campaigns")}>Manage<ArrowRight className="size-3" /></Button>} />
-        {campaigns.length === 0 ? <EmptyState icon={Sparkles} title="No campaigns yet" description="Group your QR codes by handout, tour, or follow-up channel." action={<Button variant="outline" className={buttonQuiet} size="sm" onClick={() => openView("campaigns")}><Plus className="size-4" />Create campaign</Button>} /> : <div className="divide-y divide-border">{campaigns.slice(0, 5).map((campaign) => { const campaignQrs = qrs.filter((qr) => qr.campaign_id === campaign.id); const campaignScans = scans.filter((scan) => campaignQrs.some((qr) => qr.id === scan.qr_code_id)); return <div key={campaign.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5"><div className="grid size-8 shrink-0 place-items-center rounded-md bg-accent text-accent-foreground"><Sparkles className="size-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{campaign.name}</p><p className="mt-0.5 text-[10px] text-muted-foreground">{campaignQrs.length} QR codes · {campaignScans.length} scans</p></div><StatusPill status={campaign.status} /></div>; })}</div>}
       </section>
     </div>
     <p className="mt-5 flex items-start gap-2 border-l-2 border-success pl-3 text-[10px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />A QR scan is a visit, not a confirmed review. Customers write and submit feedback on the platform themselves.</p>
