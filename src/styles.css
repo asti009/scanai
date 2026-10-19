@@ -1,0 +1,91 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --font-sans: "Inter", sans-serif;
+  --font-display: "SF Pro Display", "Inter", sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.17 0.022 255);
+  --foreground: oklch(0.95 0.012 245);
+  --card: oklch(0.205 0.024 252);
+  --card-foreground: oklch(0.95 0.012 245);
+  --popover: oklch(0.205 0.024 252);
+  --popover-foreground: oklch(0.95 0.012 245);
+  --primary: oklch(0.68 0.17 249);
+  --primary-foreground: oklch(0.14 0.035 255);
+  --secondary: oklch(0.255 0.028 252);
+  --secondary-foreground: oklch(0.91 0.014 245);
+  --muted: oklch(0.24 0.023 253);
+  --muted-foreground: oklch(0.69 0.024 247);
+  --accent: oklch(0.29 0.038 194);
+  --accent-foreground: oklch(0.88 0.07 185);
+  --destructive: oklch(0.62 0.19 26);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --border: oklch(0.33 0.025 252);
+  --input: oklch(0.29 0.025 252);
+  --ring: oklch(0.68 0.17 249);
+  --success: oklch(0.69 0.14 171);
+  --success-foreground: oklch(0.15 0.03 176);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { min-width: 360px; scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01" on;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-display); }
+  ::selection { background-color: var(--color-primary); color: var(--color-primary-foreground); }
+}
+
+.workspace-scrollbar {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  .review-card-print, .review-card-print * { visibility: visible !important; }
+  .review-card-print {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    break-inside: avoid;
+  }
+}
