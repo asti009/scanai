@@ -989,7 +989,7 @@ function Overview({ agency, qrs, scans, activeQrCount, lastSevenDays, maxDailySc
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Metric label="Total QR codes" value={qrs.length} detail="All QR codes created" icon={QrCode} />
       <Metric label="Total scans" value={scans.length} detail="Recorded redirect visits" icon={ScanLine} tone="teal" />
-      <Metric label="Estimated visitors" value={scans.length} detail="Scan events; not verified people" icon={Users} tone="green" />
+      <Metric label="Unique QRs scanned" value={new Set(scans.map(s => s.qr_code_id)).size} detail="Different QR codes scanned" icon={Users} tone="green" />
       <Metric label="Currently active" value={activeQrCount} detail="Active and not expired" icon={Activity} />
     </div>
     <div className="mt-5">
