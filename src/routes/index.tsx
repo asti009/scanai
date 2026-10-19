@@ -447,13 +447,13 @@ function ReviewWorkspace() {
 
   function startEditQrCard(qr: QrRow) {
     setEditingQrId(qr.id);
-    // Read card text from QR data - columns now exist in database
+    // Read card text from QR data - use ?? to preserve empty strings
     console.log("Editing QR:", qr.id, "card_headline:", qr.card_headline);
     setQrCardForm({
-      headline: qr.card_headline || "Happy with our service?",
-      subtitle: qr.card_subtitle || "Help spread the word. Review us on Google or Cloutly.",
-      businessName: qr.card_business_name || agency?.name || "",
-      footerText: qr.card_footer_text || "Scan QR code to review us",
+      headline: qr.card_headline ?? "Happy with our service?",
+      subtitle: qr.card_subtitle ?? "Help spread the word. Review us on Google or Cloutly.",
+      businessName: qr.card_business_name ?? agency?.name ?? "",
+      footerText: qr.card_footer_text ?? "Scan QR code to review us",
     });
   }
 
@@ -465,18 +465,20 @@ function ReviewWorkspace() {
   async function saveQrCardText() {
     if (!editingQrId) return;
     setBusy(true);
-    const { error } = await supabase.from("qr_codes").update({
+    console.log("Saving QR card text:", { editingQrId, qrCardForm });
+    const { data, error } = await supabase.from("qr_codes").update({
       card_headline: qrCardForm.headline.trim(),
       card_subtitle: qrCardForm.subtitle.trim(),
       card_business_name: qrCardForm.businessName.trim() || null,
       card_footer_text: qrCardForm.footerText.trim(),
       updated_at: new Date().toISOString(),
-    }).eq("id", editingQrId);
+    }).eq("id", editingQrId).select();
     if (error) {
       console.error("Save error:", error);
       toast.error(`QR card text could not be saved: ${error.message}`);
     }
     else {
+      console.log("Save successful, updated data:", data);
       toast.success("QR card text saved!");
       setEditingQrId(null);
       setQrCardForm({ headline: "", subtitle: "", businessName: "", footerText: "" });
@@ -646,11 +648,11 @@ function ReviewWorkspace() {
           card_footer_text: freshQrData.card_footer_text,
         });
         
-        // Use saved values, fall back to defaults only if undefined/null/empty
-        const headline = freshQrData.card_headline || "Happy with our service?";
-        const subtitle = freshQrData.card_subtitle || "Help spread the word. Review us on Google or Cloutly.";
-        const businessName = freshQrData.card_business_name || agency?.name || "Your Business Name Here";
-        const footerText = freshQrData.card_footer_text || "Scan QR code to review us";
+        // Use saved values from database - only use defaults if the value is null/undefined (not for empty strings)
+        const headline = freshQrData.card_headline ?? "Happy with our service?";
+        const subtitle = freshQrData.card_subtitle ?? "Help spread the word. Review us on Google or Cloutly.";
+        const businessName = freshQrData.card_business_name ?? agency?.name ?? "Your Business Name Here";
+        const footerText = freshQrData.card_footer_text ?? "Scan QR code to review us";
         
         ctx.textAlign = "center";
         
