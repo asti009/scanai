@@ -187,11 +187,6 @@ function ReviewWorkspace() {
   }, [sessionUser?.id]);
 
   useEffect(() => {
-    if (!agency) return;
-    setAgencyForm({ name: agency.name, email: agency.email, phone: agency.phone, website: agency.website ?? "" });
-  }, [agency?.id]);
-
-  useEffect(() => {
     const settings = Object.fromEntries(platforms.map((item) => [item.id, { profile: item.profile_url ?? "", review: item.review_url ?? "" }]));
     setPlatformForm(settings);
   }, [platforms]);
