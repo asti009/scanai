@@ -346,9 +346,33 @@ function ReviewWorkspace() {
     event.preventDefault();
     if (!agency) return;
     setBusy(true);
-    const { error } = await supabase.from("agencies").update({ ...agencyForm, website: agencyForm.website.trim() || null, updated_at: new Date().toISOString() }).eq("id", agency.id);
-    if (error) toast.error("Agency details could not be saved.");
-    else { toast.success("Agency details saved."); await refreshWorkspace(); }
+    const { data: updatedAgency, error } = await supabase
+      .from("agencies")
+      .update({ 
+        name: agencyForm.name.trim(),
+        email: agencyForm.email.trim(),
+        phone: agencyForm.phone.trim(),
+        website: agencyForm.website.trim() || null, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq("id", agency.id)
+      .select()
+      .single();
+    
+    if (error) {
+      toast.error("Agency details could not be saved.");
+    } else {
+      // Update agency state directly with the returned data
+      setAgency(updatedAgency);
+      // Also update the form to reflect the saved data
+      setAgencyForm({
+        name: updatedAgency.name,
+        email: updatedAgency.email,
+        phone: updatedAgency.phone,
+        website: updatedAgency.website ?? ""
+      });
+      toast.success("Agency details saved.");
+    }
     setBusy(false);
   }
 
@@ -880,8 +904,8 @@ function ReviewWorkspace() {
         </div>
         <div className="mt-auto border-t border-border p-4">
           <div className="mb-3 flex items-center gap-3 rounded-md bg-secondary/50 px-3 py-2.5">
-            <div className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/15 text-[12px] font-semibold text-primary">{agency.name.trim() ? agency.name.trim().slice(0, 1).toUpperCase() : "A"}</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{agency.name || "Agency workspace"}</p><p className="truncate text-[10px] text-muted-foreground">{sessionUser.email}</p></div>
+            <div className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/15 text-[12px] font-semibold text-primary">{agency.name && agency.name.trim() ? agency.name.trim().slice(0, 1).toUpperCase() : "A"}</div>
+            <div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{agency.name && agency.name.trim() ? agency.name.trim() : "Set up your agency"}</p><p className="truncate text-[10px] text-muted-foreground">{sessionUser.email}</p></div>
             <MoreHorizontal className="size-4 text-muted-foreground" />
           </div>
           <Button variant="ghost" className="h-9 w-full justify-start gap-3 px-3 text-muted-foreground" onClick={() => void signOut()}><LogOut className="size-4" />Sign out</Button>
@@ -990,8 +1014,14 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
   onRefresh: () => void;
 }) {
   const topQrs = [...qrs].sort((a, b) => countScans(scans, b.id) - countScans(scans, a.id)).slice(0, 4);
+  
+  // Determine welcome message - only show name if it's actually set (not empty)
+  const welcomeTitle = agency.name && agency.name.trim() 
+    ? `Welcome, ${agency.name.trim()}` 
+    : "Welcome to your workspace";
+  
   return <>
-    <PageIntro eyebrow="AGENCY OVERVIEW" title={`Welcome${agency.name ? `, ${agency.name}` : " to your workspace"}`} description="A clear view of the review links, QR codes and customer scans you've collected." action={<Button variant="outline" className={buttonQuiet} onClick={onRefresh}><Activity className="size-4" />Refresh activity</Button>} />
+    <PageIntro eyebrow="AGENCY OVERVIEW" title={welcomeTitle} description="A clear view of the review links, QR codes and customer scans you've collected." action={<Button variant="outline" className={buttonQuiet} onClick={onRefresh}><Activity className="size-4" />Refresh activity</Button>} />
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Metric label="Total QR codes" value={qrs.length} detail="All QR codes created" icon={QrCode} />
       <Metric label="Total scans" value={scans.length} detail="Recorded redirect visits" icon={ScanLine} tone="teal" />
