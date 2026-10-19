@@ -1026,17 +1026,33 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
       <Metric label="Estimated visitors" value={scans.length} detail="Scan events; not verified people" icon={Users} tone="green" />
       <Metric label="Currently active" value={activeQrCount} detail="Active and not expired" icon={Activity} />
     </div>
-    <div className="mt-5 grid gap-5 xl:grid-cols-[1.65fr_1fr]">
+    <div className="mt-5">
       <section className="border border-border bg-card">
         <PanelHeading title="Scan activity" detail="Recorded scans · last 7 days" action={<span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="size-1.5 rounded-full bg-success" />LIVE TOTALS</span>} />
-        {scans.length === 0 ? <EmptyState icon={BarChart3} title="Scan activity starts with your first QR code" description="Once customers scan an active tracked code, actual visit totals will appear here." action={<Button variant="outline" className={buttonQuiet} onClick={() => openView("qr")}><Plus className="size-4" />Create a QR code</Button>} /> : <div className="p-4 sm:p-5"><div className="mb-5 flex items-end justify-between"><div><div className="font-display text-[29px] font-semibold tabular-nums">{scans.length}</div><p className="mt-1 text-[10px] text-muted-foreground">Recorded scan events</p></div><span className="text-[10px] text-muted-foreground">Last seven days</span></div><div className="flex h-[132px] items-end gap-2 border-b border-border pb-0 sm:gap-3">{lastSevenDays.map((day) => <div key={day.key} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><span className="text-[9px] tabular-nums text-muted-foreground">{day.count || ""}</span><div className="w-full max-w-[30px] rounded-t-sm bg-primary/80 transition-all" style={{ height: `${Math.max(day.count ? 15 : 3, (day.count / maxDailyScans) * 83)}%` }} /><span className="pb-2 text-[9px] text-muted-foreground">{day.label}</span></div>)}</div></div>}
-      </section>
-      <section className="border border-border bg-card">
-        <PanelHeading title="Review platforms" detail="Your configured destinations" action={<Button variant="ghost" size="sm" className="h-7 text-[10px] text-primary" onClick={() => openView("platforms")}>Manage<ArrowRight className="size-3" /></Button>} />
-        <div className="divide-y divide-border">
-          {platforms.map((platform) => <div key={platform.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5"><PlatformMark platform={platform.platform_type as PlatformType} /><div className="min-w-0 flex-1"><p className="truncate text-[12px] font-medium">{platform.display_name}</p><p className="mt-0.5 truncate text-[10px] text-muted-foreground">{platform.review_url ? truncateUrl(platform.review_url) : "Destination not set"}</p></div><StatusPill status={platform.enabled ? "verified" : platform.verification_status} /></div>)}
-        </div>
-        {platforms.length === 0 && <EmptyState icon={Globe2} title="No destinations configured" description="Add the exact profile or review links for your agency." />}
+        {qrs.length === 0 ? (
+          <EmptyState icon={QrCode} title="No QR codes created yet" description="Create your first QR code to start tracking scans." action={<Button variant="outline" className={buttonQuiet} onClick={() => openView("qr")}><Plus className="size-4" />Create a QR code</Button>} />
+        ) : scans.length === 0 ? (
+          <EmptyState icon={BarChart3} title="No scans recorded yet" description="Your QR codes are ready. Once customers scan them, activity will appear here." />
+        ) : (
+          <div className="p-4 sm:p-5">
+            <div className="mb-5 flex items-end justify-between">
+              <div>
+                <div className="font-display text-[29px] font-semibold tabular-nums">{scans.length}</div>
+                <p className="mt-1 text-[10px] text-muted-foreground">Recorded scan events</p>
+              </div>
+              <span className="text-[10px] text-muted-foreground">Last seven days</span>
+            </div>
+            <div className="flex h-[132px] items-end gap-2 border-b border-border pb-0 sm:gap-3">
+              {lastSevenDays.map((day) => (
+                <div key={day.key} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
+                  <span className="text-[9px] tabular-nums text-muted-foreground">{day.count || ""}</span>
+                  <div className="w-full max-w-[30px] rounded-t-sm bg-primary/80 transition-all" style={{ height: `${Math.max(day.count ? 15 : 3, (day.count / maxDailyScans) * 83)}%` }} />
+                  <span className="pb-2 text-[9px] text-muted-foreground">{day.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </div>
     <p className="mt-5 flex items-start gap-2 border-l-2 border-success pl-3 text-[10px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />A QR scan is a visit, not a confirmed review. Customers write and submit feedback on the platform themselves.</p>
