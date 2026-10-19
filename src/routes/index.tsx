@@ -619,6 +619,21 @@ function ReviewWorkspace() {
         anchor.click();
         URL.revokeObjectURL(objectUrl);
       } else {
+        // Load Poppins font from Google Fonts before rendering
+        const poppinsRegular = new FontFace('Poppins', 'url(https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2)', { weight: '400' });
+        const poppinsMedium = new FontFace('Poppins', 'url(https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLGT9Z1xlFQ.woff2)', { weight: '500' });
+        const poppinsSemiBold = new FontFace('Poppins', 'url(https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2)', { weight: '600' });
+        const poppinsBold = new FontFace('Poppins', 'url(https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2)', { weight: '700' });
+        
+        await Promise.all([
+          poppinsRegular.load(),
+          poppinsMedium.load(),
+          poppinsSemiBold.load(),
+          poppinsBold.load(),
+        ]).then((fonts) => {
+          fonts.forEach((font) => document.fonts.add(font));
+        });
+        
         // Create styled PNG card matching the reference design exactly
         const qrDataUrl = await QRCode.toDataURL(target, { width: 500, margin: 1, errorCorrectionLevel: "H", color: { dark: "#000000", light: "#ffffff" } });
         
@@ -657,9 +672,9 @@ function ReviewWorkspace() {
         ctx.textAlign = "center";
         
         // ===== HEADLINE =====
-        // Bold, large black text at top (like the reference)
+        // Bold, large black text at top using Poppins
         ctx.fillStyle = "#000000";
-        ctx.font = "bold 38px Georgia, 'Times New Roman', serif";
+        ctx.font = "700 38px Poppins, sans-serif";
         
         // Word wrap headline
         const headlineLines = wrapText(ctx, headline, cardWidth - 100);
@@ -670,9 +685,9 @@ function ReviewWorkspace() {
         });
         
         // ===== SUBTITLE =====
-        // Italic, gray text below headline
+        // Regular weight, gray text below headline
         ctx.fillStyle = "#666666";
-        ctx.font = "italic 20px Georgia, 'Times New Roman', serif";
+        ctx.font = "400 20px Poppins, sans-serif";
         yPos += 15;
         const subtitleLines = wrapText(ctx, subtitle, cardWidth - 100);
         subtitleLines.forEach((line) => {
@@ -706,15 +721,15 @@ function ReviewWorkspace() {
         }
         
         // ===== BUSINESS NAME =====
-        // Bold black text below stars
+        // SemiBold black text below stars using Poppins
         ctx.fillStyle = "#000000";
-        ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
+        ctx.font = "600 26px Poppins, sans-serif";
         ctx.fillText(businessName, cardWidth / 2, starY + 80);
         
         // ===== FOOTER TEXT =====
-        // Gray text at bottom
+        // Medium weight gray text at bottom using Poppins
         ctx.fillStyle = "#666666";
-        ctx.font = "20px system-ui, -apple-system, sans-serif";
+        ctx.font = "500 20px Poppins, sans-serif";
         ctx.fillText(footerText, cardWidth / 2, starY + 125);
         
         // Download
