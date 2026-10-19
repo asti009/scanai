@@ -107,7 +107,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Review QR Workspace" },
-      { name: "description", content: "Manage genuine travel reviews, agency destinations, QR codes, print cards, campaigns, and scan analytics." },
+      { name: "description", content: "Manage genuine travel reviews, agency destinations, QR codes, print cards, and scan analytics." },
       { property: "og:title", content: "Review QR Workspace" },
       { property: "og:description", content: "A private workspace for agency review destinations, QR codes and real scan analytics." },
       { property: "og:type", content: "website" },
@@ -858,7 +858,7 @@ function ReviewWorkspace() {
       <aside className={`fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-border bg-card transition-transform md:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-[74px] items-center gap-3 border-b border-border px-5">
           <div className="flex size-9 items-center justify-center rounded-lg bg-accent text-accent-foreground"><ScanLine className="size-[18px]" /></div>
-          <div><div className="text-[14px] font-semibold tracking-[0]">Review Desk</div><div className="mt-0.5 text-[11px] text-muted-foreground">TRAVEL AGENCY WORKSPACE</div></div>
+          <div><div className="text-[14px] font-semibold tracking-[0]">Review Desk</div><div className="mt-0.5 text-[11px] text-muted-foreground">WORKSPACE</div></div>
           <Button type="button" variant="ghost" size="icon" className="ml-auto md:hidden" aria-label="Close navigation" onClick={() => setMobileMenuOpen(false)}><X /></Button>
         </div>
         <div className="px-4 pt-5">
@@ -1082,7 +1082,6 @@ function QrListItem({ qr, platforms, onToggle, onDelete, onDownload, isEditing, 
     return () => { cancelled = true; }; 
   }, [qr, platforms]);
   const platform = platforms.find((item) => item.id === qr.platform_id);
-  const campaign = campaigns.find((item) => item.id === qr.campaign_id);
   const expired = Boolean(qr.expires_at && new Date(qr.expires_at) <= new Date());
   const enabled = qr.status === "active" && !expired;
   
@@ -1122,7 +1121,7 @@ function QrListItem({ qr, platforms, onToggle, onDelete, onDownload, isEditing, 
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[12px] font-semibold">{qr.name}</p>
-        <p className="mt-1 truncate text-[10px] text-muted-foreground">{platform?.display_name ?? "Unknown platform"}{campaign ? ` · ${campaign.name}` : ""} · {qr.qr_type === "tracked" ? "Tracked" : "Direct"}</p>
+        <p className="mt-1 truncate text-[10px] text-muted-foreground">{platform?.display_name ?? "Unknown platform"} · {qr.qr_type === "tracked" ? "Tracked" : "Direct"}</p>
         <p className="mt-1 text-[9px] text-muted-foreground">{formatDate(qr.created_at)} · {expired ? "Expired" : qr.expires_at ? `Expires ${formatDate(qr.expires_at)}` : "No expiry"}</p>
       </div>
       <StatusPill status={expired ? "expired" : qr.status} />
