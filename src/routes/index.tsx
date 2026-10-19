@@ -187,11 +187,6 @@ function ReviewWorkspace() {
   }, [sessionUser?.id]);
 
   useEffect(() => {
-    if (!agency) return;
-    setAgencyForm({ name: agency.name, email: agency.email, phone: agency.phone, website: agency.website ?? "" });
-  }, [agency]);
-
-  useEffect(() => {
     const settings = Object.fromEntries(platforms.map((item) => [item.id, { profile: item.profile_url ?? "", review: item.review_url ?? "" }]));
     setPlatformForm(settings);
   }, [platforms]);
@@ -346,13 +341,14 @@ function ReviewWorkspace() {
     event.preventDefault();
     if (!agency) return;
     setBusy(true);
+    // Use form values if filled, otherwise keep existing agency values
     const { data: updatedAgency, error } = await supabase
       .from("agencies")
       .update({ 
-        name: agencyForm.name.trim(),
-        email: agencyForm.email.trim(),
-        phone: agencyForm.phone.trim(),
-        website: agencyForm.website.trim() || null, 
+        name: agencyForm.name.trim() || agency.name,
+        email: agencyForm.email.trim() || agency.email,
+        phone: agencyForm.phone.trim() || agency.phone,
+        website: agencyForm.website.trim() || agency.website || null, 
         updated_at: new Date().toISOString() 
       })
       .eq("id", agency.id)
@@ -1059,7 +1055,7 @@ function Overview({ agency, qrs, scans, campaigns, activeQrCount, lastSevenDays,
 }
 
 function AgencyPage({ agency, form, setForm, onSubmit, busy }: { agency: Agency; form: { name: string; email: string; phone: string; website: string }; setForm: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; website: string }>>; onSubmit: (event: React.FormEvent<HTMLFormElement>) => void; busy: boolean }) {
-  return <><PageIntro eyebrow="YOUR BUSINESS" title="Agency details" description="The contact details shown to customers on their review card and inactive-link page." /><div className="max-w-[760px] border border-border bg-card"><PanelHeading title="Agency profile" detail="Keep your public contact information up to date" /><form className="space-y-5 p-5 sm:p-7" onSubmit={(event) => void onSubmit(event)}><div className="grid gap-5 sm:grid-cols-2"><Field label="Agency name" htmlFor="agency-name"><Input id="agency-name" maxLength={120} className={inputClass} placeholder="Your agency name" value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} /></Field><Field label="Contact email" htmlFor="agency-email"><Input id="agency-email" type="email" required className={inputClass} value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} /></Field><Field label="Phone number" htmlFor="agency-phone"><Input id="agency-phone" type="tel" className={inputClass} value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} /></Field><Field label="Website" htmlFor="agency-website"><Input id="agency-website" type="url" className={inputClass} placeholder="https://your-agency.com" value={form.website} onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))} /></Field></div><div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5"><p className="text-[10px] text-muted-foreground">Workspace created {formatDate(agency.created_at)}</p><Button type="submit" disabled={busy}><Save className="size-4" />Save agency details</Button></div></form></div></>;
+  return <><PageIntro eyebrow="YOUR BUSINESS" title="Agency details" description="The contact details shown to customers on their review card and inactive-link page." /><div className="max-w-[760px] border border-border bg-card"><PanelHeading title="Agency profile" detail="Keep your public contact information up to date" /><form className="space-y-5 p-5 sm:p-7" onSubmit={(event) => void onSubmit(event)}><div className="grid gap-5 sm:grid-cols-2"><Field label="Agency name" htmlFor="agency-name"><Input id="agency-name" maxLength={120} className={inputClass} placeholder={agency.name || "Your agency name"} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} /></Field><Field label="Contact email" htmlFor="agency-email"><Input id="agency-email" type="email" className={inputClass} placeholder={agency.email || "email@example.com"} value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} /></Field><Field label="Phone number" htmlFor="agency-phone"><Input id="agency-phone" type="tel" className={inputClass} placeholder={agency.phone || "Phone number"} value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} /></Field><Field label="Website" htmlFor="agency-website"><Input id="agency-website" type="url" className={inputClass} placeholder={agency.website || "https://your-agency.com"} value={form.website} onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))} /></Field></div><div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5"><p className="text-[10px] text-muted-foreground">Workspace created {formatDate(agency.created_at)}</p><Button type="submit" disabled={busy}><Save className="size-4" />Save agency details</Button></div></form></div></>;
 }
 
 function Field({ label, htmlFor, hint, children }: { label: string; htmlFor: string; hint?: string; children: React.ReactNode }) {
