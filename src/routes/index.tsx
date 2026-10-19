@@ -364,12 +364,12 @@ function ReviewWorkspace() {
     } else {
       // Update agency state directly with the returned data
       setAgency(updatedAgency);
-      // Also update the form to reflect the saved data
+      // Clear the form fields after save
       setAgencyForm({
-        name: updatedAgency.name,
-        email: updatedAgency.email,
-        phone: updatedAgency.phone,
-        website: updatedAgency.website ?? ""
+        name: "",
+        email: "",
+        phone: "",
+        website: ""
       });
       toast.success("Agency details saved.");
     }
