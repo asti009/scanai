@@ -123,6 +123,22 @@ function ReviewPage() {
         
         if (active) setQrInfo(info);
 
+        // Record scan event using the database function
+        const deviceCategory = categorizeDevice(navigator.userAgent);
+        let referrerHost: string | null = null;
+        try {
+          if (document.referrer) {
+            referrerHost = new URL(document.referrer).hostname;
+          }
+        } catch {
+          // Invalid referrer URL, leave as null
+        }
+        await supabase.rpc("record_review_scan", {
+          _code: code,
+          _device_category: deviceCategory,
+          _referrer_host: referrerHost,
+        });
+
         // Get random templates if category exists
         if (info.category_id) {
           const { data: templateData } = await supabase
